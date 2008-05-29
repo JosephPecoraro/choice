@@ -14,7 +14,11 @@ module Choice
     # the option's name and the second element being a hash of the option's
     # info.  You also pass in your current arguments, so it knows what to
     # check against.
-    def parse(options, args)
+    #
+    # Added destructive option allowing you to delete options from the args
+    # array as they are found.  Defaults to false for backwards compatibility.
+    #
+    def parse(options, args, destructive=false)
       # Return empty hash if the parsing adventure would be fruitless.
       return {} if options.nil? || !options || args.nil? || !args.is_a?(Array)
       
@@ -110,6 +114,9 @@ module Choice
           else
             choices[name] = value
           end
+          
+          # Delete a found argument
+          args.delete arg if destructive
 
         elsif /^(--[^=]+)=?/ =~ arg && longs.value?($1)
           # The joke here is we always accept both --long=VALUE and --long VALUE.
@@ -141,6 +148,9 @@ module Choice
             # acceptable or not.
             choices[name] = value.nil? ? true : value
           end
+          
+          # Delete a found argument
+          args.delete arg if destructive
 
         else
           # If we're here, we have no idea what the passed argument is.  Die.

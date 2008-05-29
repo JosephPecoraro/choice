@@ -19,6 +19,9 @@ module Choice
     reset! if hash.empty?
     @@args ||= ARGV
     
+    # Defaults to false for backwards-compatibility
+    @@destructive = false
+    
     # Eval the passed block to define the options.
     instance_eval(&block) if block_given?
 
@@ -66,7 +69,6 @@ module Choice
       class_variable_set(variable, val << string)
     end
   end
-
   
   # Parse the provided args against the defined options.
   def parse #:nodoc:
@@ -80,7 +82,7 @@ module Choice
       begin
         # Delegate parsing to our parser class, passing it our defined 
         # options and the passed arguments.
-        @@choices = LazyHash.new(Parser.parse(@@options, @@args))
+        @@choices = LazyHash.new(Parser.parse(@@options, @@args, @@destructive))
       rescue Choice::Parser::ParseError
         # If we get an expected exception, show the help file.
         help
@@ -111,6 +113,11 @@ module Choice
     @@args
   end
   
+  ## Setter for descructive
+  def destructive
+    @@destructive = true
+  end
+  
   # You can choose to not kill the script after the help screen is printed.
   def dont_exit_on_help=(val) #:nodoc:
     @@exit = true
@@ -135,5 +142,6 @@ module Choice
     @@header  = Array.new
     @@options = Array.new
     @@footer  = Array.new
+    @@destructive = false
   end
 end
